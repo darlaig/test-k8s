@@ -1,0 +1,21 @@
+---
+repositories:
+- name: jenkins
+  url: https://charts.jenkins.io
+releases:
+  - name: jenkins
+    namespace: jenkins
+    chart: jenkins/jenkins
+    version: 3.8.6
+    values:
+      - values.yaml
+      - values-{{ requiredEnv "ENV" }}.yaml
+    labels:
+      app: jenkins
+  - name: jenkins-credentials
+    chart: credentials/
+    namespace: jenkins
+    secrets:
+      - github-secrets-token.yaml
+    labels:
+      app: credentials

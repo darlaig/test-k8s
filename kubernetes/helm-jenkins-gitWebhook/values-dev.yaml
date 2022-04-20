@@ -1,0 +1,74 @@
+clusterZone: cluster.local
+controller:
+
+  javaOpts: >-
+    -XX:MaxRAMPercentage=50.0 -Dhudson.model.DownloadService.noSignatureCheck=true
+    -Dorg.csanchez.jenkins.plugins.kubernetes.clients.cacheExpiration=60
+    -XX:+UseG1GC
+
+
+
+  resources:
+    requests:
+      memory: 1.5Gi
+    limits:
+      memory: 1.5Gi
+  
+  JCasC:
+    configScripts:
+      system-configuration: |
+        unclassified:
+          gitHubPluginConfig:
+            configs:
+              - credentialsId: "github-token-text"
+            hookUrl: "https://jenkins-github-webhook.smd.js-devops.co.uk/github-webhook/"
+          timestamper:
+            allPipelines: true
+            elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
+            systemTimeFormat: "'<b>'HH:mm:ss'</b> '"
+          location:
+            url: https://jenkins.smd.js-devops.co.uk
+            adminAddress: Darlaig0311@gmail.com 
+        jenkins:
+          quietPeriod: 0
+          crumbIssuer:
+            standard:
+              excludeClientIPFromCrumb: true
+      pipelines: |
+        jobs:
+          - script: |
+              def projects = [
+                'test-k8s',
+
+              ]
+              projects.each { jobName ->
+                multibranchPipelineJob(jobName) {
+                  displayName jobName
+                  branchSources {
+                    github {
+                      id jobName
+                      scanCredentialsId 'github-token'
+                      repoOwner 'DarlAig'
+                      repository jobName
+                      includes '*'
+                      buildOriginBranchWithPR false
+                      buildOriginPRMerge true
+                    }
+                  }
+                  configure {
+                    def traits = it / sources / data / 'jenkins.branch.BranchSource' / source / traits
+                    // Discover Branches: All Branches
+                    traits << 'org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait' {
+                      strategyId(3)
+                    }
+                  }
+                  orphanedItemStrategy {
+                    discardOldItems {
+                      numToKeep 1
+                    }
+                  }
+                  triggers {
+                    cron('@daily') 
+                  }
+                }
+              }

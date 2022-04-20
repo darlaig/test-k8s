@@ -1,0 +1,127 @@
+controller:
+  image: "jenkins/jenkins"
+  tag: alpine-jdk11
+  imagePullPolicy: "Always"
+  podLabels:
+    app: jenkins
+  adminSecret: false
+  initializeOnce: true
+
+  installPlugins: 
+    - pipeline-stage-view:latest   
+    - build-with-parameters:latest
+    - configuration-as-code:latest
+    - credentials-binding:latest
+    - credentials:latest
+    - github-branch-source:latest
+    - greenballs:latest
+    - job-dsl:latest
+    - kubernetes-credentials-provider:latest
+    - kubernetes:latest
+    - pipeline-gitstatuswrapper:latest
+    - reverse-proxy-auth-plugin:latest
+    - simple-theme-plugin:latest
+    - ssh-agent:latest
+    - timestamper:latest
+
+  JCasC:
+    enabled: true
+    defaultConfig: false
+    configScripts:
+      welcome-message: |
+        jenkins:
+          systemMessage: Welcome to Darlington's CI\CD server.  This Jenkins is configured and managed 'as code'.
+        security:
+          globalJobDslSecurityConfiguration:
+            useScriptSecurity: false
+      security-configuration: |
+        jenkins:
+          securityRealm:
+            local:
+              allowSignup: false
+              enableCaptcha: false
+              users: 
+              - id: "${chart-admin-username}"
+                name: "Jenkins Admin"
+                password: "${chart-admin-password}"
+
+      kubernetes-clouds: |
+        jenkins:
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                namespace: "jenkins"
+                serverUrl: "https://kubernetes.default"
+                # skipTlsVerify: true
+                credentialsId: 'jenkins-service-account'
+                jenkinsUrl: "http://jenkins:8080"
+                jenkinsTunnel: "jenkins-agent:50000"
+                connectTimeout: 0
+                readTimeout: 0
+                containerCapStr: 100
+                maxRequestsPerHostStr: 64
+                retentionTimeout: 5
+                templates:
+                  - name: "kubernetes-slave"
+                    namespace: "jenkins"
+                    label: "kubernetes-slave"
+                    serviceAccount: "jenkins"
+                    nodeUsageMode: NORMAL
+                    workspaceVolume:
+                      emptyDirWorkspaceVolume:
+                        memory: false
+                    containers:
+                      - name: "jnlp"
+                        image: "jenkinsci/jnlp-slave:3.27-1"
+                        args: ''
+                        command: ''
+                        alwaysPullImage: true
+                        workingDir: "/home/jenkins"
+                        ttyEnabled: false
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "256Mi"
+                        resourceLimitCpu: "200m"
+                        resourceLimitMemory: "256Mi"
+                        envVars:
+                          - envVar:
+                              key: 'JENKINS_URL'
+                              value: 'http://jenkins:8080'
+                        livenessProbe:
+                          failureThreshold: 0
+                          initialDelaySeconds: 0
+                          periodSeconds: 0
+                          successThreshold: 0
+                          timeoutSeconds: 0
+                    #idleMinutes: "1"
+                    #activeDeadlineSeconds: "120"
+                    #slaveConnectTimeout: "1000"
+
+      user-auth: |
+        credentials:
+          system:
+            domainCredentials:
+              - credentials:
+                  - fileSystemServiceAccountCredential:
+                      id: "jenkins-service-account"
+                      scope: GLOBAL
+      theme: |
+        unclassified:
+          simple-theme-plugin:
+            elements:
+              - cssUrl:
+                  url: "https://cdn.rawgit.com/afonsof/jenkins-material-theme/gh-pages/dist/material-deep-purple.css"
+  containerEnv:
+    - name: JENKINS_DISPLAYURL_PROVIDER
+      value: org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider
+
+
+agent:
+  enabled: false
+
+persistence:
+  enabled: true
+  size: 5Gi
+
+rbac:
+  create: true
+  readSecrets: true
