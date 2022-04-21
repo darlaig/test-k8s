@@ -1,34 +1,13 @@
-pipeline {
-  agent any
-  environment {
+node('jenkins-slave') {
+    environment {
     IMAGE_NAME = 'myapp/test'
-  }
-
-  stages {
-
-    stage('Checkout')
-      steps {
-        script {
-          sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
-          sh 'cd ./python '
-        }
-      }
+     stage('test pipeline') {
+        sh(script: """
+            echo "hello"
+           sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
+           cd ./python 
+           docker build . -t ${IMAGE_NAME}
+           trivy image ${IMAGE_NAME}
+        """)
     }
-
-    stage('Build') {
-      steps {
-        script {
-          sh 'docker build -t ${IMAGE_NAME} .'
-        }
-      }
-    }
-
-    stage('Image Scan') {
-      steps {
-        script {
-          sh ' trivy image ${IMAGE_NAME}'
-        }
-      }
-    }
-  }
 }
