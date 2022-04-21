@@ -1,5 +1,5 @@
 pipeline {
-  agent { labels 'jenkins-slave' }
+  agent any
   environment {
     IMAGE_NAME = 'myapp/test'
   }
@@ -8,8 +8,8 @@ pipeline {
 
     stage('Checkout')
       steps {
-        checkout([$class: 'GitSCM', branches: [[name: '**']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/darlaig/test-k8s.git']]])
         script {
+          sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
           sh 'cd ./python '
         }
       }
