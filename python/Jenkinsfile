@@ -1,13 +1,13 @@
 node('jenkins-slave') {
-    environment {
-    IMAGE_NAME = 'myapp/test'
-     stage('test pipeline') {
-        sh(script: """
-            echo "hello"
-           sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
-           cd ./python 
-           docker build . -t ${IMAGE_NAME}
-           trivy image ${IMAGE_NAME}
-        """)
+    withEnv(['IMAGE_NAME = myapp/test']){
+        stage('test pipeline') {
+            sh(script: """
+                echo "hello"
+              sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
+              cd ./python 
+              docker build . -t ${IMAGE_NAME}
+              trivy image ${IMAGE_NAME}
+            """)
+          }
     }
 }
