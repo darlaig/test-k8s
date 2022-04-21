@@ -1,13 +1,25 @@
 node('jenkins-slave') {
     withEnv(['IMAGE_NAME = myapp/test']){
-        stage('test pipeline') {
+        stage('checkout source') {
             sh(script: """
                 echo "hello"
               sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
               cd ./python 
-              docker build . -t ${IMAGE_NAME}
-              trivy image ${IMAGE_NAME}
             """)
+        }
+        stage('Run pytest '){
+          withPythonEnv('python3') {
+            sh(script: """ 
+                sh 'pip install pytest' 
+                sh 'pytest app.py'
+              """)
           }
+        }
+        stage('Build'){
+          sh ' docker build . -t ${IMAGE_NAME} '
+        }
+        stage('Scan image'){
+          sh 'trivy image ${IMAGE_NAME}'
+        }   
     }
 }
