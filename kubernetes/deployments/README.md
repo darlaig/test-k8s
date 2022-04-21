@@ -7,6 +7,13 @@ minikube start --nodes 2 -p multinode-demo
 ```
 this will create a two node cluster
 
+Created Kubernetes Manifest test-k8s/kubernetes
+
+```
+## deploy with kubectl apply -f deployment/
+minikube start --nodes 2 -p multinode-demo
+```
+
 ## Enable kubernetes metrics-Server for HPA
 
 ```
