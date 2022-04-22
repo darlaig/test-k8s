@@ -8,7 +8,7 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY . .
-
-USER python
+RUN adduser -D worker
+USER worker
 
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]

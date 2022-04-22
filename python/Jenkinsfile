@@ -1,17 +1,17 @@
 node('jenkins-slave') {
-    withEnv(['IMAGE_NAME = myapp/test']){
+    withEnv(['IMAGE_NAME=minikube/py-test-app:1.0']){
         stage('checkout source') {
             sh(script: """
                 echo "hello"
-              sh 'rm -rf *;git clone https://github.com/darlaig/test-k8s.git'
-              cd ./python 
+                rm -rf *;git clone https://github.com/darlaig/test-k8s.git
+                cd ./python 
             """)
         }
-        stage('Run pytest '){
+        stage('Run pytest'){
           withPythonEnv('python3') {
             sh(script: """ 
-                sh 'pip install pytest' 
-                sh 'pytest app.py'
+                pip install pytest
+                pytest app.py
               """)
           }
         }
@@ -20,6 +20,9 @@ node('jenkins-slave') {
         }
         stage('Scan image'){
           sh 'trivy image ${IMAGE_NAME}'
-        }   
+        }
+        stage('Push image'){
+          sh 'docker push ${IMAGE_NAME}'
+        } 
     }
 }
