@@ -54,7 +54,7 @@ Using John as part of the `Developers` team </br>
 Used the CA cert and key to generate the certificate by signing the CSR with a possible expiry. </br>
 
 ```
-openssl x509 -req -in bob.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out bob.crt -days 1
+openssl x509 -req -in john.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out john.crt -days 1
 ```
 
 ## Setup a new kube config

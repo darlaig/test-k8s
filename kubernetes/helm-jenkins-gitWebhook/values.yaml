@@ -1,11 +1,11 @@
 controller:
   image: "jenkins/jenkins"
   tag: alpine-jdk11
-  imagePullPolicy: "Always"
+  imagePullPolicy: "IfNotPresent"
   podLabels:
     app: jenkins
-  adminSecret: false
-  initializeOnce: true
+  adminSecret: true
+  initializeOnce: false
 
   installPlugins: 
     - pipeline-stage-view:latest   
@@ -51,7 +51,7 @@ controller:
             - kubernetes:
                 name: "kubernetes"
                 namespace: "jenkins"
-                serverUrl: "https://kubernetes.default"
+                serverUrl: "https://192.168.59.105:8443"
                 # skipTlsVerify: true
                 credentialsId: 'jenkins-service-account'
                 jenkinsUrl: "http://jenkins:8080"
@@ -114,13 +114,14 @@ controller:
     - name: JENKINS_DISPLAYURL_PROVIDER
       value: org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider
 
-
+  runAsUser: 0
+  fsGroup: 0
 agent:
   enabled: false
 
 persistence:
   enabled: true
-  size: 5Gi
+  size: 4Gi
 
 rbac:
   create: true
