@@ -16,6 +16,6 @@ releases:
     chart: credentials/
     namespace: jenkins
     secrets:
-      - github-secrets-token.yaml
+      - github-secrets-token.enc.yaml
     labels:
       app: credentials
